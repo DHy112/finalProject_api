@@ -1,25 +1,21 @@
-from flask import Flask  # 서버 구현을 위한 Flask 객체 import
-from flask import jsonify
-from flask import request
+from flask import Flask, jsonify, request
 from flask_restx import Api, Resource  # Api 구현을 위한 Api 객체 import
 import re
 import pandas as pd
 import pymysql
+import os
+import datetime
 from sklearn.metrics.pairwise import cosine_similarity
+from connection import s3_connection
+from config import BUCKET_NAME
 
-app = Flask(__name__)  # Flask 객체 선언
-api = Api(app)  # Flask 객체에 Api 객체 등록
-
-
-@app.route('/')
-def home():
-    return 'Hello, World!'
+app = Flask(__name__)
+api = Api(app)
 
 
 # 날씨에 따른 코디 추천
 @app.route('/recommend', methods=['POST'])
 def get_rec():
-    # print(request.is_json)
     params = request.get_json()
     userId = params['user_id']
     temp = int(re.sub('[℃]', '', params['temp']))
@@ -51,7 +47,6 @@ def get_rec():
     userAttr = pd.read_sql_query(qryUser, conn, index_col='id')
     userAttr = userAttr.drop(['list'], axis='columns')
 
-
     if len(userAttr) == 1:
 
         imgUserAttr = imgAttr.append(userAttr)
@@ -77,15 +72,26 @@ def get_rec():
         return {"error": "userID 확인 필요"}
 
 
-# label predict
-@app.route('/predict', methods=['POST'])
-def make_prediction():
+@app.route('/image', methods=['POST'])
+def imgUpload():
+
     if request.method == 'POST':
+        s3 = s3_connection()
+        now = datetime.datetime.now().strftime('%y%m%d_%H%M%S')
 
-        file = request.files['image']
-        if not file:
-            return {"error": "이미지를 업로드 해주세요"}
+        f = request.files['file']
+        if f:
+            extension = os.path.splitext(f.filename)[1]
+            filename = now + extension
+            f.save(filename)
+            s3.upload_file(
+                Bucket=BUCKET_NAME,
+                Filename=filename,
+                Key=filename
+            )
+            msg = "Upload Done!"
 
+        return {"message": msg}
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
