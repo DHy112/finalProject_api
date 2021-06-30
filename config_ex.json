@@ -1,0 +1,13 @@
+{
+  "AWS": {
+    "AWS_ACCESS_KEY": "AWS ACCESS KEY 입력",
+    "AWS_SECRET_KEY": "AWS SECRET KEY 입력",
+    "BUCKET_NAME": "S3 bucket 이름 입력"
+  },
+  "MariaDB": {
+    "host": "host명 입력",
+    "user": "user명 입력",
+    "password": "비밀번호 입력",
+    "database": "db 명 입력"
+  }
+}
