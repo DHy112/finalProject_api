@@ -6,7 +6,7 @@
 - flask == 1.1.2
 - torch == 1.8.1
 - torchvision == 0.9.1
-- tastai == 2.3.1
+- fastai == 2.3.1
 - cuda == 10.1
 - cudnn == 7.6.5
 
